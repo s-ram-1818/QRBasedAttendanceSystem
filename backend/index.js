@@ -175,6 +175,25 @@ app.get(
   }
 );
 app.get(
+  "/available-courses",
+  authMiddleware,
+  requireRole("student"),
+  async (req, res) => {
+    try {
+      const userId = req.user.userId;
+
+      const availableCourses = await Course.find({
+        students: { $ne: userId },
+      }).select("subject code teachername");
+
+      res.json(availableCourses);
+    } catch (err) {
+      res.status(500).send("Error fetching available courses");
+    }
+  }
+);
+
+app.get(
   "/fetch-attendance",
   authMiddleware,
   requireRole("student"),
@@ -194,7 +213,7 @@ app.get(
       );
 
       const total = records.length;
-      const present = records.filter((r) => r.status === "present").length;
+      const present = records.filter((r) => r.status === "Present").length;
 
       return {
         subject: course.subject,
@@ -211,6 +230,12 @@ app.get(
     res.json(attendanceData);
   }
 );
+app.get("/profile", authMiddleware, (req, res) => {
+  User.findById(req.user.userId)
+    .select("username email phone rollNo")
+    .then((user) => res.json(user))
+    .catch(() => res.status(500).send("Failed to load profile"));
+});
 // ✅ Mark Attendance (Student)
 app.get(
   "/mark-attendance",
