@@ -1,8 +1,47 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import axios from "../api";
+
+const features = [
+  {
+    title: "📸 Instant QR Scan",
+    desc: "Students scan and mark attendance in real-time—no manual errors, no delays.",
+    delay: 0.1,
+  },
+  {
+    title: "🧑‍🏫 Admin Dashboard",
+    desc: "Create courses, generate QR codes, and view attendance reports by subject and date.",
+    delay: 0.2,
+  },
+  {
+    title: "🔒 Secure Access",
+    desc: "Role-based login with secure JWT authentication to protect your data.",
+    delay: 0.3,
+  },
+];
 
 export default function Home() {
+  const [user, setUser] = useState(null);
+  const navigate = useNavigate();
+
+  // 🔐 Check if user is already logged in
+  useEffect(() => {
+    axios
+      .get("/profile", { withCredentials: true })
+      .then((res) => setUser(res.data))
+      .catch(() => setUser(null));
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await axios.post("/logout", {}, { withCredentials: true });
+      setUser(null);
+    } catch (err) {
+      console.error("Logout failed");
+    }
+  };
+
   return (
     <motion.div
       className="min-h-screen w-full flex flex-col items-center justify-center bg-gradient-to-br from-blue-100 to-indigo-200 px-4 py-12"
@@ -10,9 +49,8 @@ export default function Home() {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.8 }}
     >
-      {/* Header */}
       <motion.h1
-        className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-indigo-900 mb-4 text-center"
+        className="text-4xl md:text-5xl font-extrabold text-indigo-900 mb-4 text-center"
         initial={{ y: -30, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.2 }}
@@ -20,9 +58,8 @@ export default function Home() {
         Welcome to the QR Attendance System
       </motion.h1>
 
-      {/* Description */}
       <motion.p
-        className="text-center text-gray-700 max-w-2xl text-base sm:text-lg md:text-xl mb-10"
+        className="text-center text-gray-700 max-w-2xl text-lg md:text-xl mb-10"
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.4 }}
@@ -31,46 +68,60 @@ export default function Home() {
         codes per subject, and students scan them to mark presence instantly.
       </motion.p>
 
-      {/* Buttons */}
+      {/* 🔄 Conditional user view */}
       <motion.div
         className="flex flex-col sm:flex-row items-center justify-center gap-5 mb-16"
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ delay: 0.6 }}
       >
-        <Link
-          to="/login"
-          className="bg-indigo-600 text-white text-lg font-medium px-8 py-3 rounded-full shadow-md hover:bg-indigo-700 transition duration-300 w-48 text-center"
-        >
-          Login
-        </Link>
-        <Link
-          to="/register"
-          className="bg-green-500 text-white text-lg font-medium px-8 py-3 rounded-full shadow-md hover:bg-green-600 transition duration-300 w-48 text-center"
-        >
-          Register
-        </Link>
+        {user ? (
+          <div className="text-center space-y-3">
+            <p className="text-lg font-medium text-gray-800">
+              Hello, <strong>{user.username}</strong> 👋
+            </p>
+            <div className="flex gap-4 justify-center flex-wrap">
+              <button
+                onClick={() =>
+                  navigate(
+                    user.role === "admin"
+                      ? "/admin-dashboard"
+                      : "/student-dashboard"
+                  )
+                }
+                className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-full shadow transition"
+              >
+                Go to Dashboard
+              </button>
+              <button
+                onClick={handleLogout}
+                className="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-full shadow transition"
+              >
+                Logout
+              </button>
+            </div>
+          </div>
+        ) : (
+          <>
+            <Link
+              to="/login"
+              className="w-48 text-center bg-indigo-600 hover:bg-indigo-700 text-white text-lg font-medium px-8 py-3 rounded-full shadow-md transition duration-300"
+            >
+              Login
+            </Link>
+            <Link
+              to="/register"
+              className="w-48 text-center bg-green-500 hover:bg-green-600 text-white text-lg font-medium px-8 py-3 rounded-full shadow-md transition duration-300"
+            >
+              Register
+            </Link>
+          </>
+        )}
       </motion.div>
 
-      {/* Features / Info Cards */}
+      {/* 🌟 Feature Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 max-w-6xl w-full px-4">
-        {[
-          {
-            title: "📸 Instant QR Scan",
-            desc: "Students scan and mark attendance in real-time—no manual errors, no delays.",
-            delay: 0.1,
-          },
-          {
-            title: "🧑‍🏫 Admin Dashboard",
-            desc: "Create courses, generate QR codes, and view attendance reports by subject and date.",
-            delay: 0.2,
-          },
-          {
-            title: "🔒 Secure Access",
-            desc: "Role-based login with secure JWT authentication to protect your data.",
-            delay: 0.3,
-          },
-        ].map((card, idx) => (
+        {features.map((card, idx) => (
           <motion.div
             key={idx}
             className="bg-white/80 backdrop-blur-md rounded-2xl shadow-xl p-6 text-center hover:shadow-2xl transition duration-300"

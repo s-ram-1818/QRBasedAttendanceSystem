@@ -1,111 +1,79 @@
-import React, { useEffect, useRef, useState } from "react";
-import { Html5Qrcode } from "html5-qrcode";
+// src/components/StudentList.jsx
+
+import React, { useEffect, useState } from "react";
 import axios from "../api";
-import { useNavigate } from "react-router-dom";
 
-const ScanPage = () => {
-  const readerRef = useRef(null);
-  const scannerRef = useRef(null);
-  const [message, setMessage] = useState("");
-  const navigate = useNavigate();
+const StudentList = () => {
+  const [courses, setCourses] = useState([]); // Stores all courses with students
+  const [expandedCourseCodes, setExpandedCourseCodes] = useState([]); // Stores codes of expanded courses
 
+  // Fetch courses and enrolled students when component mounts
   useEffect(() => {
-    const timeout = setTimeout(() => {
-      if (!readerRef.current) {
-        setMessage("❌ QR container not found.");
-        return;
-      }
-
-      scannerRef.current = new Html5Qrcode(readerRef.current.id);
-
-      Html5Qrcode.getCameras()
-        .then((devices) => {
-          if (!devices.length) {
-            setMessage("❌ No camera found.");
-            return;
-          }
-
-          return scannerRef.current.start(
-            { facingMode: "environment" },
-            { fps: 10, qrbox: 250 },
-            async (decodedText) => {
-              if (!decodedText) return;
-              await scannerRef.current.stop();
-
-              try {
-                const url = new URL(decodedText);
-                const token = url.searchParams.get("token");
-
-                if (!token) {
-                  setMessage("⚠️ Invalid QR code.");
-                  return;
-                }
-
-                const res = await axios.get(`/mark-attendance?token=${token}`, {
-                  withCredentials: true,
-                });
-
-                setMessage(`✅ ${res.data}`);
-                setTimeout(() => navigate("/dashboard"), 2000);
-              } catch (err) {
-                setMessage(err.response?.data || "❌ Error marking attendance");
-              }
-            }
-          );
-        })
-        .catch((err) => {
-          console.error("Camera error", err);
-          setMessage("❌ Unable to access camera.");
+    const fetchCourses = async () => {
+      try {
+        const res = await axios.get("/fetch-courses-admin", {
+          withCredentials: true,
         });
-    }, 100);
-
-    return () => {
-      clearTimeout(timeout);
-      if (scannerRef.current) {
-        scannerRef.current.stop().catch(() => {});
+        setCourses(res.data); // Expected format: [{ subject, code, students: [{ name, present, absent, total }] }]
+      } catch (err) {
+        console.error("Error fetching course data", err);
       }
     };
+
+    fetchCourses();
   }, []);
 
+  // Toggle expanded view for a course
+  const toggleExpand = (code) => {
+    setExpandedCourseCodes((prev) =>
+      prev.includes(code) ? prev.filter((c) => c !== code) : [...prev, code]
+    );
+  };
+
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-4 bg-gradient-to-br from-blue-100 to-indigo-200">
-      <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-md text-center">
-        <h1 className="text-2xl font-bold text-indigo-800 mb-2">
-          📷 Scan QR Code
-        </h1>
-        <p className="text-sm text-gray-500 mb-4">
-          Position the QR code within the frame
-        </p>
+    <div className="bg-white p-6 rounded-2xl shadow-lg max-w-4xl mx-auto">
+      <h2 className="text-xl font-semibold mb-6 text-center text-indigo-800">
+        📋 Attendance Report by Course
+      </h2>
 
+      {courses.map((course) => (
         <div
-          id="qr-reader"
-          ref={readerRef}
-          className="w-full h-[300px] rounded-lg border-2 border-indigo-400 shadow-inner"
-        ></div>
-
-        {message && (
-          <p
-            className={`mt-4 text-sm font-semibold ${
-              message.startsWith("✅")
-                ? "text-green-600"
-                : message.startsWith("⚠️")
-                ? "text-yellow-500"
-                : "text-red-600"
-            }`}
-          >
-            {message}
-          </p>
-        )}
-
-        <button
-          onClick={() => navigate("/student-dashboard")}
-          className="mt-6 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm shadow transition"
+          key={course.code}
+          className="mb-4 border border-indigo-200 p-4 rounded-xl shadow-sm bg-indigo-50"
         >
-          ← Back to Dashboard
-        </button>
-      </div>
+          {/* Course Header */}
+          <div
+            className="cursor-pointer flex justify-between items-center hover:bg-indigo-100 px-2 py-1 rounded-md transition"
+            onClick={() => toggleExpand(course.code)}
+          >
+            <h3 className="font-bold text-lg text-indigo-900">
+              {course.subject} ({course.code})
+            </h3>
+            <span className="text-sm text-indigo-600 font-medium">
+              {expandedCourseCodes.includes(course.code) ? "Hide" : "Show"}{" "}
+              Students
+            </span>
+          </div>
+
+          {/* Student List */}
+          {expandedCourseCodes.includes(course.code) && (
+            <ul className="list-disc ml-6 mt-3 text-sm text-gray-800 space-y-1">
+              {course.students?.length > 0 ? (
+                course.students.map((s, index) => (
+                  <li key={index}>
+                    <strong>{s.name}</strong> — Present: {s.present}, Absent:{" "}
+                    {s.absent}, Total: {s.total}
+                  </li>
+                ))
+              ) : (
+                <li className="text-gray-500">No students registered</li>
+              )}
+            </ul>
+          )}
+        </div>
+      ))}
     </div>
   );
 };
 
-export default ScanPage;
+export default StudentList;

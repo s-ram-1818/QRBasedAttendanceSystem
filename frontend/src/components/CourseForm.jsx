@@ -14,33 +14,73 @@ const CourseForm = () => {
       const res = await axios.post("/create-course", form, {
         withCredentials: true,
       });
-      setMessage(res.data);
+      setMessage(`✅ ${res.data}`);
+      setForm({ teachername: "", subject: "", code: "" }); // Reset form
     } catch (err) {
-      setMessage(err.response?.data || "Error");
+      setMessage(`❌ ${err.response?.data || "Error creating course"}`);
     }
   };
 
   return (
-    <div className="bg-white p-6 rounded-2xl shadow-lg max-w-md mx-auto">
-      <h2 className="text-xl font-semibold mb-4 text-center">
+    <div className="bg-white p-6 rounded-2xl shadow-xl max-w-md mx-auto">
+      <h2 className="text-2xl font-bold mb-6 text-center text-indigo-800">
         📚 Create New Course
       </h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        {["teachername", "subject", "code"].map((field) => (
+
+      <form onSubmit={handleSubmit} className="space-y-5">
+        <div>
+          <label className="block mb-1 text-sm text-gray-600">
+            Teacher Name
+          </label>
           <input
-            key={field}
-            name={field}
-            placeholder={field}
-            value={form[field]}
+            name="teachername"
+            value={form.teachername}
             onChange={handleChange}
-            className="w-full p-2 border rounded-xl"
             required
+            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
           />
-        ))}
-        <button className="w-full bg-blue-600 text-white py-2 rounded-xl hover:bg-blue-700">
-          Create
+        </div>
+
+        <div>
+          <label className="block mb-1 text-sm text-gray-600">Subject</label>
+          <input
+            name="subject"
+            value={form.subject}
+            onChange={handleChange}
+            required
+            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
+          />
+        </div>
+
+        <div>
+          <label className="block mb-1 text-sm text-gray-600">
+            Course Code
+          </label>
+          <input
+            name="code"
+            value={form.code}
+            onChange={handleChange}
+            required
+            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
+          />
+        </div>
+
+        <button
+          type="submit"
+          className="w-full bg-indigo-600 text-white py-2 rounded-lg font-semibold hover:bg-indigo-700 transition"
+        >
+          Create Course
         </button>
-        {message && <p className="text-center mt-2">{message}</p>}
+
+        {message && (
+          <p
+            className={`text-center text-sm font-medium ${
+              message.startsWith("✅") ? "text-green-600" : "text-red-600"
+            }`}
+          >
+            {message}
+          </p>
+        )}
       </form>
     </div>
   );

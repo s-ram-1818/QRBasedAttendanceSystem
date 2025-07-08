@@ -14,11 +14,23 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      // First log in
       await axios.post("/login", formData, { withCredentials: true });
+
+      // Then fetch the profile
+      const res = await axios.get("/profile", { withCredentials: true });
+      const role = res.data.role;
+
       alert("✅ Login successful!");
-      navigate("/student-dashboard");
+
+      // Navigate based on role
+      if (role === "admin") {
+        navigate("/admin-dashboard");
+      } else {
+        navigate("/student-dashboard");
+      }
     } catch (err) {
-      alert("❌ " + err.response?.data || "Login failed");
+      alert("❌ " + (err.response?.data || "Login failed"));
     }
   };
 

@@ -326,7 +326,7 @@ app.get(
 app.get("/profile", authMiddleware, async (req, res) => {
   try {
     const user = await User.findById(req.user.userId).select(
-      "username email phone rollNo"
+      "username email phone rollNo role name createdAt updatedAt"
     );
     res.json(user);
   } catch {
