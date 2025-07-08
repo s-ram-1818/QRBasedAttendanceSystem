@@ -1,6 +1,11 @@
 const mongoose = require("mongoose");
 
 const courseSchema = new mongoose.Schema({
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+  },
   teachername: {
     type: String,
     required: true,
@@ -16,11 +21,11 @@ const courseSchema = new mongoose.Schema({
   },
   students: [
     {
-      type: String, // ✅ Correct way to reference a user // Reference to User model
-      unique: true, // Ensure each student can only be registered once
+      type: mongoose.Schema.Types.ObjectId, // Reference to User model
+      ref: "User",
+      // Do NOT use unique: true here!
     },
   ],
 });
-courseSchema.index({ code: 1 }, { unique: true }); // Ensure course code is unique
 
 module.exports = mongoose.model("Course", courseSchema);

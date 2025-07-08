@@ -7,13 +7,14 @@ const attendanceSchema = new mongoose.Schema({
     required: true,
   },
   subject: { type: String, required: true },
+  code: {
+    type: String,
+    required: true,
+    // Ensure each attendance record is unique per student and subject
+  },
   date: {
     type: Date,
-    default: () => {
-      const d = new Date();
-      d.setHours(0, 0, 0, 0);
-      return d; // ✅ Returns a proper Date object
-    },
+    default: Date.now, // Automatically set to current date
   },
   status: {
     type: String,
@@ -23,6 +24,6 @@ const attendanceSchema = new mongoose.Schema({
   },
 });
 
-attendanceSchema.index({ student: 1, subject: 1, date: 1 }, { unique: true });
+// attendanceSchema.index({ student: 1, subject: 1, date: 1 }, { unique: true });
 
 module.exports = mongoose.model("Attendance", attendanceSchema);

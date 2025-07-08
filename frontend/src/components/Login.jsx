@@ -16,7 +16,7 @@ const Login = () => {
     try {
       await axios.post("/login", formData, { withCredentials: true });
       alert("✅ Login successful!");
-      navigate("/");
+      navigate("/student-dashboard");
     } catch (err) {
       alert("❌ " + err.response?.data || "Login failed");
     }
