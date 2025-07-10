@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const instance = axios.create({
-  baseURL: "https://qrbasedattendancesystem.onrender.com/", // 👈 change this to your backend URL
+  baseURL: "https://smart-attend.onrender.com", // 👈 change this to your backend URL
   withCredentials: true, // send cookies if using sessions/auth
   headers: {
     "Content-Type": "application/json",
