@@ -216,7 +216,7 @@ app.get(
         student: studentId,
         subject: course.subject,
         code,
-        date: today,
+        date: date,
         status: "Absent",
       }));
 
