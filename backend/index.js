@@ -254,6 +254,7 @@ app.get(
       const code = decoded.code;
       const adminIP = decoded.ip;
       const studentIP = getClientIP(req);
+      const today = decoded.date;
       if (normalizeIP(adminIP) !== normalizeIP(studentIP)) {
         return res.send(`you are not on required network`);
       }
