@@ -211,7 +211,7 @@ app.get(
       const token = jwt.sign({ code }, process.env.QR_SECRET, {
         expiresIn: "15m",
       });
-      const qrUrl = `http://localhost:3000/mark-attendance?token=${token}`;
+      const qrUrl = `${process.env.frontend_url}/mark-attendance?token=${token}`;
       const qrImage = await QRCode.toDataURL(qrUrl);
 
       res.json({ qr: qrImage });
