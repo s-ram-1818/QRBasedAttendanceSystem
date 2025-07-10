@@ -45,6 +45,15 @@ function authMiddleware(req, res, next) {
     res.status(401).send("Invalid token");
   }
 }
+// utils/getClientIP.js
+
+function getClientIP(req) {
+  return (
+    req.headers["x-forwarded-for"]?.split(",")[0] ||
+    req.socket?.remoteAddress ||
+    req.connection?.remoteAddress
+  );
+}
 
 // ------------------------
 // 🔐 Role-Based Access Middleware
@@ -211,10 +220,15 @@ app.get(
       }));
 
       await Attendance.insertMany(absentRecords, { ordered: false });
+      const adminIP = getClientIP(req);
 
-      const token = jwt.sign({ code }, process.env.QR_SECRET, {
-        expiresIn: "15m",
-      });
+      const token = jwt.sign(
+        { code: code, ip: adminIP },
+        process.env.QR_SECRET,
+        {
+          expiresIn: "15m",
+        }
+      );
       const qrUrl = `${process.env.frontend_url}/mark-attendance?token=${token}`;
       const qrImage = await QRCode.toDataURL(qrUrl);
 
@@ -237,6 +251,11 @@ app.get(
     try {
       const decoded = jwt.verify(token, process.env.QR_SECRET);
       const code = decoded.code;
+      const adminIP = decoded.ip;
+      const studentIP = getClientIP(req);
+      if (adminIP !== studentIP) {
+        return res.send(`you are not on required network`);
+      }
 
       const updated = await Attendance.findOneAndUpdate(
         { student: req.user.userId, code, status: "Absent" },
