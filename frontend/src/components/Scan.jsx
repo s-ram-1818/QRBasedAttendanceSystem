@@ -30,7 +30,10 @@ const ScanPage = () => {
             { fps: 10, qrbox: 250 },
             async (decodedText) => {
               if (!decodedText) return;
+
               await scannerRef.current.stop();
+              await scannerRef.current.clear();
+              scannerRef.current = null;
 
               try {
                 const url = new URL(decodedText);
@@ -46,7 +49,6 @@ const ScanPage = () => {
                 });
 
                 setMessage(`✅ ${res.data}`);
-                setTimeout(() => navigate("/dashboard"), 2000);
               } catch (err) {
                 setMessage(err.response?.data || "❌ Error marking attendance");
               }
@@ -54,21 +56,30 @@ const ScanPage = () => {
           );
         })
         .catch((err) => {
-          console.error("Camera error", err);
-          setMessage("❌ Unable to access camera.");
+          if (err.name === "NotAllowedError") {
+            setMessage("❌ Camera permission denied.");
+          } else {
+            console.error("Camera error", err);
+            setMessage("❌ Unable to access camera.");
+          }
         });
     }, 100);
 
     return () => {
       clearTimeout(timeout);
       if (scannerRef.current) {
-        scannerRef.current.stop().catch(() => {});
+        scannerRef.current
+          .stop()
+          .then(() => {
+            scannerRef.current.clear();
+          })
+          .catch(() => {});
       }
     };
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-4 bg-gradient-to-br from-blue-100 to-indigo-200">
+    <div className="min-h-screen flex flex-col items-center justify-center px-4 py-6 bg-gradient-to-br from-blue-100 to-indigo-200 overflow-y-auto">
       <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-md text-center">
         <h1 className="text-2xl font-bold text-indigo-800 mb-2">
           📷 Scan QR Code
@@ -80,7 +91,7 @@ const ScanPage = () => {
         <div
           id="qr-reader"
           ref={readerRef}
-          className="w-full h-[300px] rounded-lg border-2 border-indigo-400 shadow-inner"
+          className="w-full h-[60vh] max-h-[400px] rounded-lg border-2 border-indigo-400 shadow-inner overflow-hidden"
         ></div>
 
         {message && (
@@ -98,8 +109,8 @@ const ScanPage = () => {
         )}
 
         <button
-          onClick={() => navigate("/dashboard")}
-          className="mt-6 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm shadow transition"
+          onClick={() => navigate("/student-dashboard")}
+          className="mt-6 w-full px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm shadow transition"
         >
           ← Back to Dashboard
         </button>
