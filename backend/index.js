@@ -196,6 +196,8 @@ app.post(
 );
 
 // ✅ Generate QR (Admin) & Mark all as Absent initially
+const normalizeIP = (ip) => ip?.replace("::ffff:", "");
+
 app.get(
   "/generate-qr",
   authMiddleware,
@@ -253,7 +255,7 @@ app.get(
       const code = decoded.code;
       const adminIP = decoded.ip;
       const studentIP = getClientIP(req);
-      if (adminIP !== studentIP) {
+      if (normalizeIP(adminIP) !== normalizeIP(studentIP)) {
         return res.send(`you are not on required network`);
       }
 
