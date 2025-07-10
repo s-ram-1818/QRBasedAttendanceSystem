@@ -210,8 +210,7 @@ app.get(
       const course = await Course.findOne({ code }, "students subject");
       if (!course) return res.status(404).send("Course not found");
 
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
+      const date = new Date();
 
       const absentRecords = course.students.map((studentId) => ({
         student: studentId,
@@ -225,7 +224,7 @@ app.get(
       const adminIP = getClientIP(req);
 
       const token = jwt.sign(
-        { code: code, ip: adminIP },
+        { code: code, ip: adminIP, date: date },
         process.env.QR_SECRET,
         {
           expiresIn: "15m",
@@ -258,9 +257,19 @@ app.get(
       if (normalizeIP(adminIP) !== normalizeIP(studentIP)) {
         return res.send(`you are not on required network`);
       }
+      const alreadyMarked = await Attendance.findOne({
+        student: req.user.userId,
+        code,
+        date: today,
+
+        status: "Present",
+      });
+      if (alreadyMarked) {
+        return res.status(400).send("✅ Already marked for this session");
+      }
 
       const updated = await Attendance.findOneAndUpdate(
-        { student: req.user.userId, code, status: "Absent" },
+        { student: req.user.userId, code, status: "Absent", date: today },
         { status: "Present" },
         { new: true, sort: { date: -1 } }
       );
