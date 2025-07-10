@@ -1,122 +1,184 @@
-import React, { useEffect, useRef, useState } from "react";
-import { Html5Qrcode } from "html5-qrcode";
+import { useState } from "react";
 import axios from "../api";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+import { motion } from "framer-motion";
 
-const ScanPage = () => {
-  const readerRef = useRef(null);
-  const scannerRef = useRef(null);
-  const [message, setMessage] = useState("");
+const Register = () => {
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      if (!readerRef.current) {
-        setMessage("❌ QR container not found.");
-        return;
-      }
+  const [formData, setFormData] = useState({
+    name: "",
+    username: "",
+    password: "",
+    email: "",
+    phone: "",
+    role: "student",
+    rollno: "",
+  });
 
-      scannerRef.current = new Html5Qrcode(readerRef.current.id);
+  const handleChange = (e) =>
+    setFormData({ ...formData, [e.target.name]: e.target.value });
 
-      Html5Qrcode.getCameras()
-        .then((devices) => {
-          if (!devices.length) {
-            setMessage("❌ No camera found.");
-            return;
-          }
-
-          return scannerRef.current.start(
-            { facingMode: "environment" },
-            { fps: 10, qrbox: 250 },
-            async (decodedText) => {
-              if (!decodedText) return;
-
-              await scannerRef.current.stop();
-              await scannerRef.current.clear();
-              scannerRef.current = null;
-
-              try {
-                const url = new URL(decodedText);
-                const token = url.searchParams.get("token");
-
-                if (!token) {
-                  setMessage("⚠️ Invalid QR code.");
-                  return;
-                }
-
-                const res = await axios.get(`/mark-attendance?token=${token}`, {
-                  withCredentials: true,
-                });
-
-                setMessage(`✅ ${res.data}`);
-              } catch (err) {
-                setMessage(err.response?.data || "❌ Error marking attendance");
-              }
-            }
-          );
-        })
-        .catch((err) => {
-          if (err.name === "NotAllowedError") {
-            setMessage("❌ Camera permission denied.");
-          } else {
-            console.error("Camera error", err);
-            setMessage("❌ Unable to access camera.");
-          }
-        });
-    }, 100);
-
-    return () => {
-      clearTimeout(timeout);
-      if (scannerRef.current) {
-        scannerRef.current
-          .stop()
-          .then(() => {
-            scannerRef.current.clear();
-          })
-          .catch(() => {});
-      }
-    };
-  }, []);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await axios.post("/register", formData, { withCredentials: true });
+      navigate("/login");
+    } catch (err) {
+      alert("❌ " + (err.response?.data || "Registration failed"));
+    }
+  };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-4 py-6 bg-gradient-to-br from-blue-100 to-indigo-200 overflow-y-auto">
-      <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-md text-center">
-        <h1 className="text-2xl font-bold text-indigo-800 mb-2">
-          📷 Scan QR Code
-        </h1>
-        <p className="text-sm text-gray-500 mb-4">
-          Position the QR code within the frame
-        </p>
+    <motion.div
+      className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 to-purple-200 px-4"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+    >
+      <motion.div
+        className="bg-white p-6 sm:p-8 rounded-2xl shadow-2xl w-full max-w-md"
+        initial={{ y: 50, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 0.2 }}
+      >
+        <h2 className="text-3xl font-bold mb-6 text-center text-indigo-800">
+          📝 Create Account
+        </h2>
 
-        <div
-          id="qr-reader"
-          ref={readerRef}
-          className="w-full h-[60vh] max-h-[400px] rounded-lg border-2 border-indigo-400 shadow-inner overflow-hidden"
-        ></div>
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div className="flex flex-col">
+            <label htmlFor="name" className="text-sm text-gray-600 mb-1">
+              Full Name
+            </label>
+            <input
+              id="name"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              required
+              placeholder="Your name"
+              className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
+            />
+          </div>
 
-        {message && (
-          <p
-            className={`mt-4 text-sm font-semibold ${
-              message.startsWith("✅")
-                ? "text-green-600"
-                : message.startsWith("⚠️")
-                ? "text-yellow-500"
-                : "text-red-600"
-            }`}
+          <div className="flex flex-col">
+            <label htmlFor="username" className="text-sm text-gray-600 mb-1">
+              Username
+            </label>
+            <input
+              id="username"
+              name="username"
+              value={formData.username}
+              onChange={handleChange}
+              required
+              placeholder="Choose a username"
+              className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
+            />
+          </div>
+
+          <div className="flex flex-col">
+            <label htmlFor="email" className="text-sm text-gray-600 mb-1">
+              Email
+            </label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              value={formData.email}
+              onChange={handleChange}
+              required
+              placeholder="you@example.com"
+              className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
+            />
+          </div>
+
+          <div className="flex flex-col">
+            <label htmlFor="phone" className="text-sm text-gray-600 mb-1">
+              Phone
+            </label>
+            <input
+              id="phone"
+              name="phone"
+              type="tel"
+              maxLength={10}
+              pattern="[0-9]{10}"
+              value={formData.phone}
+              onChange={handleChange}
+              required
+              placeholder="10-digit phone number"
+              className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
+            />
+          </div>
+
+          <div className="flex flex-col">
+            <label htmlFor="password" className="text-sm text-gray-600 mb-1">
+              Password
+            </label>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              value={formData.password}
+              onChange={handleChange}
+              required
+              placeholder="Create a password"
+              className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
+            />
+          </div>
+
+          <div className="flex flex-col">
+            <label htmlFor="role" className="text-sm text-gray-600 mb-1">
+              Role
+            </label>
+            <select
+              id="role"
+              name="role"
+              value={formData.role}
+              onChange={handleChange}
+              className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
+            >
+              <option value="student">Student</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+
+          {formData.role === "student" && (
+            <div className="flex flex-col">
+              <label htmlFor="rollno" className="text-sm text-gray-600 mb-1">
+                Roll No
+              </label>
+              <input
+                id="rollno"
+                name="rollno"
+                value={formData.rollno}
+                onChange={handleChange}
+                required
+                placeholder="Enter your roll number"
+                className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              />
+            </div>
+          )}
+
+          <button
+            type="submit"
+            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-lg font-semibold transition"
           >
-            {message}
-          </p>
-        )}
+            Register
+          </button>
+        </form>
 
-        <button
-          onClick={() => navigate("/student-dashboard")}
-          className="mt-6 w-full px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm shadow transition"
-        >
-          ← Back to Dashboard
-        </button>
-      </div>
-    </div>
+        <div className="text-sm text-center mt-5 text-gray-600">
+          Already have an account?{" "}
+          <Link
+            to="/login"
+            className="text-indigo-600 font-medium hover:underline"
+          >
+            Login
+          </Link>
+        </div>
+      </motion.div>
+    </motion.div>
   );
 };
 
-export default ScanPage;
+export default Register;

@@ -277,7 +277,7 @@ app.get(
         { new: true, sort: { date: -1 } }
       );
 
-      if (!updated) return res.status(404).send("Attendance not started yet");
+      if (!updated) return res.status(404).send("you are not registered");
       res.send(`✅ Attendance marked for ${updated.subject}`);
     } catch {
       res.status(401).send("❌ Invalid or expired QR token");

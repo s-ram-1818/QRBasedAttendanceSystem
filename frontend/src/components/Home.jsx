@@ -25,7 +25,6 @@ export default function Home() {
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
 
-  // 🔐 Check if user is already logged in
   useEffect(() => {
     axios
       .get("/profile", { withCredentials: true })
@@ -49,6 +48,7 @@ export default function Home() {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.8 }}
     >
+      {/* 🔥 Heading */}
       <motion.h1
         className="text-4xl md:text-5xl font-extrabold text-indigo-900 mb-4 text-center"
         initial={{ y: -30, opacity: 0 }}
@@ -58,6 +58,7 @@ export default function Home() {
         Welcome to the QR Attendance System
       </motion.h1>
 
+      {/* 🔍 Subheading */}
       <motion.p
         className="text-center text-gray-700 max-w-2xl text-lg md:text-xl mb-10"
         initial={{ y: 20, opacity: 0 }}
@@ -68,19 +69,19 @@ export default function Home() {
         codes per subject, and students scan them to mark presence instantly.
       </motion.p>
 
-      {/* 🔄 Conditional user view */}
+      {/* 👤 Auth Actions */}
       <motion.div
-        className="flex flex-col sm:flex-row items-center justify-center gap-5 mb-16"
+        className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16 w-full max-w-md"
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ delay: 0.6 }}
       >
         {user ? (
-          <div className="text-center space-y-3">
+          <div className="w-full text-center space-y-4">
             <p className="text-lg font-medium text-gray-800">
               Hello, <strong>{user.username}</strong> 👋
             </p>
-            <div className="flex gap-4 justify-center flex-wrap">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <button
                 onClick={() =>
                   navigate(
@@ -89,33 +90,33 @@ export default function Home() {
                       : "/student-dashboard"
                   )
                 }
-                className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-full shadow transition"
+                className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-full shadow transition"
               >
                 Go to Dashboard
               </button>
               <button
                 onClick={handleLogout}
-                className="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-full shadow transition"
+                className="w-full sm:w-auto bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-full shadow transition"
               >
                 Logout
               </button>
             </div>
           </div>
         ) : (
-          <>
+          <div className="flex flex-col sm:flex-row gap-4 w-full max-w-md">
             <Link
               to="/login"
-              className="w-48 text-center bg-indigo-600 hover:bg-indigo-700 text-white text-lg font-medium px-8 py-3 rounded-full shadow-md transition duration-300"
+              className="w-full sm:w-1/2 text-center bg-indigo-600 hover:bg-indigo-700 text-white text-lg font-medium px-6 py-3 rounded-full shadow-md transition duration-300"
             >
               Login
             </Link>
             <Link
               to="/register"
-              className="w-48 text-center bg-green-500 hover:bg-green-600 text-white text-lg font-medium px-8 py-3 rounded-full shadow-md transition duration-300"
+              className="w-full sm:w-1/2 text-center bg-green-500 hover:bg-green-600 text-white text-lg font-medium px-6 py-3 rounded-full shadow-md transition duration-300"
             >
               Register
             </Link>
-          </>
+          </div>
         )}
       </motion.div>
 

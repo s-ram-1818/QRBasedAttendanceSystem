@@ -1,4 +1,3 @@
-// src/pages/StudentDashboard.jsx
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import axios from "../api";
@@ -12,6 +11,7 @@ const StudentDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [expandedSubject, setExpandedSubject] = useState(null);
   const [showAvailable, setShowAvailable] = useState(false);
+  const [fetchingCourses, setFetchingCourses] = useState(false);
 
   const navigate = useNavigate();
 
@@ -22,7 +22,6 @@ const StudentDashboard = () => {
     day: "numeric",
   });
 
-  // Fetch profile, courses and attendance
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -37,6 +36,7 @@ const StudentDashboard = () => {
           attendanceMap[entry.code] = {
             total: entry.total,
             present: entry.present,
+            attendance: entry.attendance,
           };
         });
 
@@ -44,6 +44,7 @@ const StudentDashboard = () => {
           ...course,
           totalClasses: attendanceMap[course.code]?.total || 0,
           presents: attendanceMap[course.code]?.present || 0,
+          attendance: attendanceMap[course.code]?.attendance || [],
         }));
 
         setStudent(profileRes.data);
@@ -59,32 +60,43 @@ const StudentDashboard = () => {
     fetchData();
   }, []);
 
-  // Fetch available courses
   const fetchAvailableCourses = async () => {
     try {
+      setFetchingCourses(true);
       const res = await axios.get("/available-courses", {
         withCredentials: true,
       });
       setAvailableCourses(res.data);
     } catch (err) {
       console.error("Available course load error:", err);
+    } finally {
+      setFetchingCourses(false);
     }
   };
-
-  const handleScan = () => navigate("/scan");
 
   const handleRegisterCourse = async (code) => {
     try {
       await axios.post("/register-course", { code }, { withCredentials: true });
       alert("✅ Registered successfully!");
-      setShowAvailable(false);
-      window.location.reload();
+
+      // Remove from available list
+      const updated = availableCourses.filter((c) => c.code !== code);
+      setAvailableCourses(updated);
+
+      // Refresh enrolled list
+      const res = await axios.get("/fetch-courses", { withCredentials: true });
+      const newCourse = res.data.find((c) => c.code === code);
+      if (newCourse) {
+        setCourses((prev) => [
+          ...prev,
+          { ...newCourse, totalClasses: 0, presents: 0, attendance: [] },
+        ]);
+      }
     } catch (err) {
       alert("❌ " + (err.response?.data || "Error registering"));
     }
   };
 
-  // Logout
   const handleLogout = async () => {
     try {
       await axios.post("/logout", {}, { withCredentials: true });
@@ -92,6 +104,8 @@ const StudentDashboard = () => {
       navigate("/");
     }
   };
+
+  const handleScan = () => navigate("/scan");
 
   if (loading) {
     return (
@@ -112,11 +126,11 @@ const StudentDashboard = () => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
     >
-      <div className="w-full max-w-5xl bg-white shadow-2xl rounded-2xl p-8">
-        {/* Header with logout */}
-        <div className="flex justify-between items-center mb-6">
+      <div className="w-full max-w-5xl bg-white shadow-2xl rounded-2xl p-6 sm:p-8">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-3">
           <div>
-            <h1 className="text-3xl font-extrabold text-indigo-800">
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-indigo-800">
               Welcome, {student.username || "Student"} 🎓
             </h1>
             <p className="text-sm text-gray-600 mt-1">{today}</p>
@@ -130,7 +144,7 @@ const StudentDashboard = () => {
         </div>
 
         {/* Profile Info */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 bg-white rounded-xl border p-6 shadow text-sm text-gray-800">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 bg-white rounded-xl border p-6 shadow text-sm text-gray-800 mb-6">
           <div>
             <strong>👤 Name:</strong> {student.name || "N/A"}
           </div>
@@ -151,35 +165,32 @@ const StudentDashboard = () => {
           </div>
           <div>
             <strong>📅 Created:</strong>{" "}
-            {student.createdAt
-              ? new Date(student.createdAt).toLocaleDateString("en-IN")
-              : "N/A"}
+            {new Date(student.createdAt).toLocaleDateString("en-IN")}
           </div>
           <div>
             <strong>🕒 Last Updated:</strong>{" "}
-            {student.updatedAt
-              ? new Date(student.updatedAt).toLocaleDateString("en-IN")
-              : "N/A"}
+            {new Date(student.updatedAt).toLocaleDateString("en-IN")}
           </div>
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex justify-between items-center mb-6">
+        {/* Actions */}
+        <div className="flex flex-col sm:flex-row justify-between items-center mb-4 gap-4">
           <button
             onClick={() => {
               const toggle = !showAvailable;
               setShowAvailable(toggle);
               if (toggle) fetchAvailableCourses();
             }}
-            className="text-indigo-600 hover:underline"
+            className="text-indigo-600 hover:underline text-sm font-medium"
           >
             {showAvailable
               ? "Hide Available Courses"
               : "📚 Show Available Courses"}
           </button>
+
           <button
             onClick={handleScan}
-            className="bg-purple-600 hover:bg-purple-700 text-white px-5 py-2 rounded-xl transition"
+            className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm shadow transition"
           >
             📷 Scan Attendance
           </button>
@@ -187,11 +198,11 @@ const StudentDashboard = () => {
 
         {/* Available Courses */}
         {showAvailable && (
-          <div className="mb-8">
+          <div className="mb-6">
             <h2 className="text-lg font-bold text-indigo-700 mb-3">
               Available Courses
             </h2>
-            <div className="overflow-x-auto rounded-xl border">
+            <div className="overflow-x-auto rounded-xl border bg-white">
               <table className="min-w-full text-sm">
                 <thead className="bg-indigo-50 text-indigo-800 font-semibold">
                   <tr>
@@ -202,7 +213,16 @@ const StudentDashboard = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {availableCourses.length > 0 ? (
+                  {fetchingCourses ? (
+                    <tr>
+                      <td
+                        colSpan="4"
+                        className="text-center text-gray-500 py-4"
+                      >
+                        Loading courses...
+                      </td>
+                    </tr>
+                  ) : availableCourses.length > 0 ? (
                     availableCourses.map((course, i) => (
                       <tr key={i} className="border-t hover:bg-indigo-50">
                         <td className="px-4 py-2">{course.subject}</td>
@@ -234,7 +254,7 @@ const StudentDashboard = () => {
           </div>
         )}
 
-        {/* Enrolled Course List */}
+        {/* Enrolled Courses */}
         <div className="overflow-x-auto bg-gray-50 rounded-xl shadow-inner">
           <table className="min-w-full text-sm">
             <thead className="bg-indigo-50 text-indigo-800 font-semibold border-b">
@@ -250,7 +270,6 @@ const StudentDashboard = () => {
               {courses.length > 0 ? (
                 courses.map((course, idx) => {
                   const isExpanded = expandedSubject === course.code;
-                  const entry = attendance.find((a) => a.code === course.code);
                   const percent = course.totalClasses
                     ? ((course.presents / course.totalClasses) * 100).toFixed(1)
                     : "0.0";
@@ -258,9 +277,17 @@ const StudentDashboard = () => {
                   return (
                     <React.Fragment key={idx}>
                       <tr
+                        role="button"
+                        aria-expanded={isExpanded}
+                        tabIndex={0}
                         onClick={() =>
                           setExpandedSubject(isExpanded ? null : course.code)
                         }
+                        onKeyPress={(e) => {
+                          if (e.key === "Enter") {
+                            setExpandedSubject(isExpanded ? null : course.code);
+                          }
+                        }}
                         className="border-t hover:bg-indigo-50 cursor-pointer transition"
                       >
                         <td className="px-4 py-2">{course.subject}</td>
@@ -275,14 +302,14 @@ const StudentDashboard = () => {
                           {percent}%
                         </td>
                       </tr>
-                      {isExpanded && entry?.attendance?.length > 0 && (
+                      {isExpanded && course.attendance.length > 0 && (
                         <tr className="bg-indigo-50 text-sm">
                           <td colSpan="5" className="px-4 py-3">
                             <strong className="block mb-2 text-indigo-800">
                               Attendance Details:
                             </strong>
                             <ul className="list-disc ml-6 text-gray-700 space-y-1">
-                              {entry.attendance.map((att, i) => (
+                              {course.attendance.map((att, i) => (
                                 <li key={i}>
                                   <span className="font-medium">
                                     {att.date}

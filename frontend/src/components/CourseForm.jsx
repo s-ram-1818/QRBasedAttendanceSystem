@@ -15,53 +15,61 @@ const CourseForm = () => {
         withCredentials: true,
       });
       setMessage(`✅ ${res.data}`);
-      setForm({ teachername: "", subject: "", code: "" }); // Reset form
+      setForm({ teachername: "", subject: "", code: "" });
     } catch (err) {
       setMessage(`❌ ${err.response?.data || "Error creating course"}`);
     }
   };
 
   return (
-    <div className="bg-white p-6 rounded-2xl shadow-xl max-w-md mx-auto">
-      <h2 className="text-2xl font-bold mb-6 text-center text-indigo-800">
+    <div className="bg-white p-6 sm:p-8 rounded-2xl shadow-xl max-w-xl mx-auto w-full">
+      <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-center text-indigo-800">
         📚 Create New Course
       </h2>
 
       <form onSubmit={handleSubmit} className="space-y-5">
-        <div>
-          <label className="block mb-1 text-sm text-gray-600">
-            Teacher Name
+        <div className="flex flex-col">
+          <label htmlFor="teachername" className="mb-1 text-sm text-gray-600">
+            👩‍🏫 Teacher Name
           </label>
           <input
+            id="teachername"
             name="teachername"
             value={form.teachername}
             onChange={handleChange}
             required
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
+            placeholder="Enter teacher name"
+            className="w-full px-4 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
           />
         </div>
 
-        <div>
-          <label className="block mb-1 text-sm text-gray-600">Subject</label>
+        <div className="flex flex-col">
+          <label htmlFor="subject" className="mb-1 text-sm text-gray-600">
+            📘 Subject
+          </label>
           <input
+            id="subject"
             name="subject"
             value={form.subject}
             onChange={handleChange}
             required
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
+            placeholder="Enter subject name"
+            className="w-full px-4 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
           />
         </div>
 
-        <div>
-          <label className="block mb-1 text-sm text-gray-600">
-            Course Code
+        <div className="flex flex-col">
+          <label htmlFor="code" className="mb-1 text-sm text-gray-600">
+            🔢 Course Code
           </label>
           <input
+            id="code"
             name="code"
             value={form.code}
             onChange={handleChange}
             required
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
+            placeholder="Enter course code"
+            className="w-full px-4 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
           />
         </div>
 
@@ -69,7 +77,7 @@ const CourseForm = () => {
           type="submit"
           className="w-full bg-indigo-600 text-white py-2 rounded-lg font-semibold hover:bg-indigo-700 transition"
         >
-          Create Course
+          ➕ Create Course
         </button>
 
         {message && (
