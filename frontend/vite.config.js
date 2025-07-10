@@ -5,7 +5,7 @@ import tailwindcss from "@tailwindcss/vite";
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [tailwindcss(), react()],
-  base: "./", // ✅ for relative asset paths
+  base: "/", // ✅ for relative asset paths
   build: {
     outDir: "dist",
   },
