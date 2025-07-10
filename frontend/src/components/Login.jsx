@@ -21,8 +21,6 @@ const Login = () => {
       const res = await axios.get("/profile", { withCredentials: true });
       const role = res.data.role;
 
-      alert("✅ Login successful!");
-
       // Navigate based on role
       if (role === "admin") {
         navigate("/admin-dashboard");

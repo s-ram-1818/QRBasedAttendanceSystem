@@ -24,7 +24,7 @@ const Register = () => {
     e.preventDefault();
     try {
       await axios.post("/register", formData, { withCredentials: true });
-      alert("✅ Registered successfully! Please login.");
+
       navigate("/login");
     } catch (err) {
       alert("❌ " + (err.response?.data || "Registration failed"));

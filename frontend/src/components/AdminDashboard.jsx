@@ -95,8 +95,8 @@ const AdminDashboard = () => {
             className={`px-4 py-2 rounded-2xl shadow-md transition
               ${
                 view === key
-                  ? `bg-${color}-700 text-white`
-                  : `bg-${color}-600 hover:bg-${color}-700 text-white`
+                  ? `bg-blue-400 text-white`
+                  : `bg-blue-400 hover:bg-${color}-700 text-white`
               }
             `}
           >
