@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const instance = axios.create({
-  baseURL: "http://smar-attend.onrender.com", // 👈 change this to your backend URL
+  baseURL: "https://smar-attend.onrender.com", // 👈 change this to your backend URL
   withCredentials: true, // send cookies if using sessions/auth
   headers: {
     "Content-Type": "application/json",
