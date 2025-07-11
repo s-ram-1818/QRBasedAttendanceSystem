@@ -58,7 +58,9 @@ const StudentList = () => {
                       <thead className="text-indigo-700 bg-indigo-50">
                         <tr>
                           <th className="px-2 py-1">#</th>
+                          <th className="px-2 py-1">RollNo</th>
                           <th className="px-2 py-1">Name</th>
+
                           <th className="px-2 py-1 text-center">Present</th>
                           <th className="px-2 py-1 text-center">Absent</th>
                           <th className="px-2 py-1 text-center">Total</th>
@@ -66,41 +68,45 @@ const StudentList = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        {course.students.map((s, index) => {
-                          const percent = s.total
-                            ? ((s.present / s.total) * 100).toFixed(1)
-                            : "0.0";
+                        {course.students
+                          .sort((a, b) => a.rollNo.localeCompare(b.rollNo))
+                          .map((s, index) => {
+                            const percent = s.total
+                              ? ((s.present / s.total) * 100).toFixed(1)
+                              : "0.0";
 
-                          return (
-                            <tr
-                              key={index}
-                              className="border-t hover:bg-indigo-50"
-                            >
-                              <td className="px-2 py-1">{index + 1}</td>
-                              <td className="px-2 py-1">{s.name}</td>
-                              <td className="px-2 py-1 text-center">
-                                {s.present}
-                              </td>
-                              <td className="px-2 py-1 text-center">
-                                {s.absent}
-                              </td>
-                              <td className="px-2 py-1 text-center">
-                                {s.total}
-                              </td>
-                              <td
-                                className={`px-2 py-1 text-center font-semibold ${
-                                  percent >= 75
-                                    ? "text-green-600"
-                                    : percent >= 50
-                                    ? "text-yellow-600"
-                                    : "text-red-600"
-                                }`}
+                            return (
+                              <tr
+                                key={index}
+                                className="border-t hover:bg-indigo-50"
                               >
-                                {percent}%
-                              </td>
-                            </tr>
-                          );
-                        })}
+                                <td className="px-2 py-1">{index + 1}</td>
+                                <td className="px-2 py-1">{s.rollNo}</td>
+
+                                <td className="px-2 py-1">{s.name}</td>
+                                <td className="px-2 py-1 text-center">
+                                  {s.present}
+                                </td>
+                                <td className="px-2 py-1 text-center">
+                                  {s.absent}
+                                </td>
+                                <td className="px-2 py-1 text-center">
+                                  {s.total}
+                                </td>
+                                <td
+                                  className={`px-2 py-1 text-center font-semibold ${
+                                    percent >= 75
+                                      ? "text-green-600"
+                                      : percent >= 50
+                                      ? "text-yellow-600"
+                                      : "text-red-600"
+                                  }`}
+                                >
+                                  {percent}%
+                                </td>
+                              </tr>
+                            );
+                          })}
                       </tbody>
                     </table>
                   ) : (
