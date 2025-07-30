@@ -23,7 +23,7 @@ async function getAttendanceReportByCode(code) {
     // Fetch student details (name)
     const studentDocs = await User.find(
       { _id: { $in: students } },
-      "name rollNo"
+      "name username"
     );
 
     const report = await Promise.all(
@@ -39,7 +39,7 @@ async function getAttendanceReportByCode(code) {
 
         return {
           name: student.name,
-          rollNo: student.rollNo,
+          rollNo: student.username,
 
           present,
           absent,
