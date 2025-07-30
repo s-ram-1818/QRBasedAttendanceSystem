@@ -83,7 +83,7 @@ app.get("/", (req, res) => {
 app.post("/register", async (req, res) => {
   const { name, username, password, email, phone, role, rollNo } = req.body;
 
-  const existing = await User.findOne({
+  const existingUser = await User.findOne({
     $or: [
       { username },
       { email },
@@ -92,7 +92,16 @@ app.post("/register", async (req, res) => {
     ],
   });
 
-  if (existing) return res.status(400).send("User already exists");
+  if (existingUser) {
+    if (existingUser.username === username)
+      return res.status(400).send("Username already exists");
+    if (existingUser.email === email)
+      return res.status(400).send("Email already exists");
+    if (existingUser.phone === phone)
+      return res.status(400).send("Phone number already exists");
+    if (role === "student" && existingUser.rollNo === rollNo)
+      return res.status(400).send("Roll number already exists");
+  }
 
   const hashedPassword = await bcrypt.hash(password, 10);
   const userData = {
