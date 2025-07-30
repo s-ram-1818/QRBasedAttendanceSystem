@@ -8,7 +8,12 @@ const userSchema = new mongoose.Schema(
 
     rollNo: {
       type: String,
-      unique: true,
+      required: function () {
+        return this.role === "student";
+      },
+      unique: function () {
+        return this.role === "student";
+      },
     },
 
     phone: { type: String, required: true, unique: true },
