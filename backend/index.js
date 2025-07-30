@@ -88,7 +88,7 @@ app.post("/register", async (req, res) => {
       { username },
       { email },
       { phone },
-      ...(role === "student" ? [{ rollNo }] : []),
+      // ...(role === "student" ? [{ rollNo }] : []),
     ],
   });
 
