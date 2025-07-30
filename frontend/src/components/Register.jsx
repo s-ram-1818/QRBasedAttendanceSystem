@@ -119,19 +119,6 @@ const Register = () => {
             </select>
           </div>
 
-          {formData.role === "student" && (
-            <div className="flex flex-col">
-              <label className="text-sm text-gray-600 mb-1">Roll No</label>
-              <input
-                name="rollno"
-                placeholder="Enter your roll number"
-                onChange={handleChange}
-                required
-                className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
-              />
-            </div>
-          )}
-
           <button
             type="submit"
             className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-lg font-semibold transition"

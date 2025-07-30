@@ -6,13 +6,6 @@ const userSchema = new mongoose.Schema(
 
     username: { type: String, required: true, unique: true },
 
-    rollNo: {
-      type: String,
-      required: function () {
-        return this.role === "student";
-      },
-    },
-
     phone: { type: String, required: true, unique: true },
 
     email: {
@@ -33,15 +26,4 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// 🧠 Ensure MongoDB enforces uniqueness on rollNo only for students
-userSchema.index(
-  { rollNo: 1 },
-  {
-    unique: true,
-    partialFilterExpression: {
-      role: "student",
-      rollNo: { $exists: true },
-    },
-  }
-);
 module.exports = mongoose.model("User", userSchema);
