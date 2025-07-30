@@ -94,8 +94,6 @@ app.post("/register", async (req, res) => {
       return res.status(400).send("Email already exists");
     if (existingUser.phone === phone)
       return res.status(400).send("Phone number already exists");
-    if (role === "student" && existingUser.rollNo === rollNo)
-      return res.status(400).send("Roll number already exists");
   }
 
   const hashedPassword = await bcrypt.hash(password, 10);
@@ -108,8 +106,6 @@ app.post("/register", async (req, res) => {
     role,
   };
 
-  if (role === "student") userData.rollNo = rollNo;
-
   await new User(userData).save();
   res.status(201).send("User registered successfully");
 });
@@ -119,7 +115,7 @@ app.post("/login", async (req, res) => {
   const { username, password } = req.body;
 
   const user = await User.findOne({
-    $or: [{ username }, { email: username }, { rollNo: username }],
+    $or: [{ username }, { email: username }],
   });
 
   if (!user || !(await bcrypt.compare(password, user.password))) {
@@ -377,7 +373,7 @@ app.get(
 app.get("/profile", authMiddleware, async (req, res) => {
   try {
     const user = await User.findById(req.user.userId).select(
-      "username email phone rollNo role name createdAt updatedAt"
+      "username email phone role name createdAt updatedAt"
     );
     res.json(user);
   } catch {
