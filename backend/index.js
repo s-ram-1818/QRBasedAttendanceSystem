@@ -81,14 +81,14 @@ app.get("/", (req, res) => {
 
 // ✅ Register User (Student/Admin)
 app.post("/register", async (req, res) => {
-  const { name, username, password, email, phone, role, rollno } = req.body;
+  const { name, username, password, email, phone, role, rollNo } = req.body;
 
   const existing = await User.findOne({
     $or: [
       { username },
       { email },
       { phone },
-      ...(role === "student" ? [{ rollNo: rollno }] : []),
+      ...(role === "student" ? [{ rollNo }] : []),
     ],
   });
 
@@ -104,7 +104,7 @@ app.post("/register", async (req, res) => {
     role,
   };
 
-  if (role === "student") userData.rollNo = rollno;
+  if (role === "student") userData.rollNo = rollNo;
 
   await new User(userData).save();
   res.status(201).send("User registered successfully");
